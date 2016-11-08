@@ -76,9 +76,9 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.EventHandler;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.JsonNodeFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.sun.jersey.api.client.ClientHandlerException;
 
@@ -400,7 +400,7 @@ public class JobHistoryEventHandler extends AbstractService
         }
         mi.shutDownTimer();
       } catch (IOException e) {
-        LOG.info("Exception while cancelling delayed flush timer. "
+        LOG.info("Exception while canceling delayed flush timer. "
             + "Likely caused by a failed flush " + e.getMessage());
       }
     }

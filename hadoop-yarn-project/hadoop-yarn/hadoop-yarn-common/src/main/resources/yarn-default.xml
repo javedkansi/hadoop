@@ -180,6 +180,20 @@
   </property>
 
   <property>
+    <description>To enable RM web ui2 application.</description>
+    <name>yarn.webapp.ui2.enable</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <description>
+      Explicitly provide WAR file path for ui2 if needed.
+    </description>
+    <name>yarn.webapp.ui2.war-file-path</name>
+    <value></value>
+  </property>
+
+  <property>
     <name>yarn.resourcemanager.resource-tracker.address</name>
     <value>${yarn.resourcemanager.hostname}:8031</value>
   </property>
@@ -417,7 +431,7 @@
     the applications remembered in RM memory.
     Any values larger than ${yarn.resourcemanager.max-completed-applications} will
     be reset to ${yarn.resourcemanager.max-completed-applications}.
-    Note that this value impacts the RM recovery performance.Typically,
+    Note that this value impacts the RM recovery performance. Typically,
     a smaller value indicates better performance on RM recovery.
     </description>
     <name>yarn.resourcemanager.state-store.max-completed-applications</name>
@@ -519,16 +533,6 @@
     <name>yarn.resourcemanager.fs.state-store.uri</name>
     <value>${hadoop.tmp.dir}/yarn/system/rmstore</value>
     <!--value>hdfs://localhost:9000/rmstore</value-->
-  </property>
-
-  <property>
-    <description>hdfs client retry policy specification. hdfs client retry
-    is always enabled. Specified in pairs of sleep-time and number-of-retries
-    and (t0, n0), (t1, n1), ..., the first n0 retries sleep t0 milliseconds on
-    average, the following n1 retries sleep t1 milliseconds on average, and so on.
-    </description>
-    <name>yarn.resourcemanager.fs.state-store.retry-policy-spec</name>
-    <value>2000, 500</value>
   </property>
 
   <property>
@@ -687,7 +691,7 @@
   <property>
     <description>The maximum number of completed applications RM keeps. </description>
     <name>yarn.resourcemanager.max-completed-applications</name>
-    <value>10000</value>
+    <value>1000</value>
   </property>
 
   <property>
@@ -975,7 +979,6 @@
     <description>who will execute(launch) the containers.</description>
     <name>yarn.nodemanager.container-executor.class</name>
     <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
-<!--<value>org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor</value>-->
   </property>
 
   <property>
@@ -1349,6 +1352,12 @@
   <property>
     <description>Class that calculates current resource utilization.</description>
     <name>yarn.nodemanager.resource-calculator.class</name>
+  </property>
+
+  <property>
+    <description>Enable container monitor</description>
+    <name>yarn.nodemanager.container-monitor.enabled</name>
+    <value>true</value>
   </property>
 
   <property>
@@ -1802,30 +1811,7 @@
     <value></value>
   </property>
 
-  <!-- Docker Configuration -->
-
-  <property>
-    <name>yarn.nodemanager.docker-container-executor.exec-name</name>
-    <value>/usr/bin/docker</value>
-    <description>
-      Name or path to the Docker client.
-    </description>
-  </property>
-
-  <property>
-    <description>
-    The Docker image name to use for DockerContainerExecutor
-    </description>
-    <name>yarn.nodemanager.docker-container-executor.image-name</name>
-    <value></value>
-  </property>
-
   <!-- Map Reduce Configuration -->
-
-  <property>
-    <name>mapreduce.job.hdfs-servers</name>
-    <value>${fs.defaultFS}</value>
-  </property>
 
   <property>
     <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
@@ -2477,16 +2463,6 @@
 
   <property>
     <description>
-    Retry policy used for FileSystem node label store. The policy is
-    specified by N pairs of sleep-time in milliseconds and number-of-retries
-    "s1,n1,s2,n2,...".
-    </description>
-    <name>yarn.node-labels.fs-store.retry-policy-spec</name>
-    <value>2000, 500</value>
-  </property>
-
-  <property>
-    <description>
     URI for NodeLabelManager.  The default value is
     /tmp/hadoop-yarn-${user}/node-labels/ in the local filesystem.
     </description>
@@ -3069,4 +3045,13 @@
     <name>yarn.resourcemanager.node-removal-untracked.timeout-ms</name>
     <value>60000</value>
   </property>
+
+  <property>
+    <description>
+    The RMAppLifetimeMonitor Service uses this value as lifetime monitor interval
+    </description>
+    <name>yarn.resourcemanager.application-timeouts.lifetime-monitor.interval-ms</name>
+    <value>60000</value>
+  </property>
+
 </configuration>

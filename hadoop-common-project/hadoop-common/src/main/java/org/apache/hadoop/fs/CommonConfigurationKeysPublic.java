@@ -628,6 +628,14 @@ public class CommonConfigurationKeysPublic {
   public static final String  HADOOP_SECURITY_IMPERSONATION_PROVIDER_CLASS =
     "hadoop.security.impersonation.provider.class";
 
+  /**
+   * @see
+   * <a href="{@docRoot}/../hadoop-project-dist/hadoop-common/core-default.xml">
+   * core-default.xml</a>
+   */
+  public static final String HADOOP_SECURITY_KEY_PROVIDER_PATH =
+      "hadoop.security.key.provider.path";
+
   //  <!-- KMSClientProvider configurations -->
   /**
    * @see
@@ -762,7 +770,9 @@ public class CommonConfigurationKeysPublic {
   public static final String HADOOP_SECURITY_SENSITIVE_CONFIG_KEYS =
       "hadoop.security.sensitive-config-keys";
   public static final String HADOOP_SECURITY_SENSITIVE_CONFIG_KEYS_DEFAULT =
+      "secret$" + "," +
       "password$" + "," +
+      "ssl.keystore.pass$" + "," +
       "fs.s3.*[Ss]ecret.?[Kk]ey" + "," +
       "fs.azure\\.account.key.*" + "," +
       "dfs.webhdfs.oauth2.[a-z]+.token" + "," +

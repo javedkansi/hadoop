@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -715,7 +716,7 @@ public class DFSAdmin extends FsShell {
   }
   
   /**
-   * Allow snapshot on a directory.
+   * Disallow snapshot on a directory.
    * Usage: hdfs dfsadmin -disallowSnapshot snapshotDir
    * @param argv List of of command line parameters.
    * @exception IOException
@@ -742,9 +743,10 @@ public class DFSAdmin extends FsShell {
     long timeWindow = 0;
     long txGap = 0;
     if (argv.length > 1 && "-beforeShutdown".equals(argv[1])) {
-      final long checkpointPeriod = dfsConf.getLong(
+      final long checkpointPeriod = dfsConf.getTimeDuration(
           DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_PERIOD_KEY,
-          DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_PERIOD_DEFAULT);
+          DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_PERIOD_DEFAULT,
+          TimeUnit.SECONDS);
       final long checkpointTxnCount = dfsConf.getLong(
           DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_TXNS_KEY,
           DFSConfigKeys.DFS_NAMENODE_CHECKPOINT_TXNS_DEFAULT);
@@ -934,8 +936,7 @@ public class DFSAdmin extends FsShell {
       System.out.println("Balancer bandwidth is " + bandwidth
           + " bytes per second.");
     } catch (IOException ioe) {
-      System.err.println("Datanode unreachable.");
-      return -1;
+      throw new IOException("Datanode unreachable. " + ioe, ioe);
     }
     return 0;
   }
@@ -2205,7 +2206,7 @@ public class DFSAdmin extends FsShell {
       dnProxy.evictWriters();
       System.out.println("Requested writer eviction to datanode " + dn);
     } catch (IOException ioe) {
-      return -1;
+      throw new IOException("Datanode unreachable. " + ioe, ioe);
     }
     return 0;
   }
@@ -2216,8 +2217,7 @@ public class DFSAdmin extends FsShell {
       DatanodeLocalInfo dnInfo = dnProxy.getDatanodeInfo();
       System.out.println(dnInfo.getDatanodeLocalReport());
     } catch (IOException ioe) {
-      System.err.println("Datanode unreachable.");
-      return -1;
+      throw new IOException("Datanode unreachable. " + ioe, ioe);
     }
     return 0;
   }

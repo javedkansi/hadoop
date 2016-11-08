@@ -59,7 +59,7 @@ import org.apache.hadoop.fs.azure.metrics.ResponseReceivedMetricUpdater;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.permission.PermissionStatus;
 import org.apache.hadoop.io.IOUtils;
-import org.mortbay.util.ajax.JSON;
+import org.eclipse.jetty.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -742,8 +742,9 @@ public class AzureNativeFileSystemStore implements NativeFileSystemStore {
     try {
       if (!container.exists(getInstrumentedContext())) {
         throw new AzureException("Container " + containerName + " in account "
-            + accountName + " not found, and we can't create "
-            + " it using anoynomous credentials.");
+            + accountName + " not found, and we can't create"
+            + " it using anoynomous credentials, and no credentials found for them"
+            + " in the configuration.");
       }
     } catch (StorageException ex) {
       throw new AzureException("Unable to access container " + containerName

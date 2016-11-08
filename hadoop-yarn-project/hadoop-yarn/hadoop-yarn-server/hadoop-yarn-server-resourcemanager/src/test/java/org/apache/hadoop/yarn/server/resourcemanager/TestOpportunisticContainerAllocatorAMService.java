@@ -57,11 +57,13 @@ import org.apache.hadoop.yarn.factories.RecordFactory;
 import org.apache.hadoop.yarn.factory.providers.RecordFactoryProvider;
 import org.apache.hadoop.yarn.ipc.HadoopYarnProtoRPC;
 import org.apache.hadoop.yarn.ipc.YarnRPC;
+import org.apache.hadoop.yarn.server.api.protocolrecords.RemoteNode;
 import org.apache.hadoop.yarn.server.api.protocolrecords.impl.pb.DistributedSchedulingAllocateRequestPBImpl;
 import org.apache.hadoop.yarn.server.api.protocolrecords.impl.pb.DistributedSchedulingAllocateResponsePBImpl;
 import org.apache.hadoop.yarn.server.api.protocolrecords.impl.pb.RegisterDistributedSchedulingAMResponsePBImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.AMLivelinessMonitor;
 
+import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -97,6 +99,11 @@ public class TestOpportunisticContainerAllocatorAMService {
       public Configuration getYarnConfiguration() {
         return new YarnConfiguration();
       }
+
+      @Override
+      public RMContainerTokenSecretManager getContainerTokenSecretManager() {
+        return new RMContainerTokenSecretManager(conf);
+      }
     };
     Container c = factory.newRecordInstance(Container.class);
     c.setExecutionType(ExecutionType.OPPORTUNISTIC);
@@ -117,8 +124,8 @@ public class TestOpportunisticContainerAllocatorAMService {
     Server server = service.getServer(rpc, conf, addr, null);
     server.start();
 
-    // Verify that the DistrubutedSchedulingService can handle vanilla
-    // ApplicationMasterProtocol clients
+    // Verify that the OpportunisticContainerAllocatorAMSercvice can handle
+    // vanilla ApplicationMasterProtocol clients
     RPC.setProtocolEngine(conf, ApplicationMasterProtocolPB.class,
         ProtobufRpcEngine.class);
     ApplicationMasterProtocolPB ampProxy =
@@ -184,7 +191,7 @@ public class TestOpportunisticContainerAllocatorAMService {
             dsProxy.allocateForDistributedScheduling(null,
                 distAllReq.getProto()));
     Assert.assertEquals(
-        "h1", dsAllocResp.getNodesForScheduling().get(0).getHost());
+        "h1", dsAllocResp.getNodesForScheduling().get(0).getNodeId().getHost());
 
     FinishApplicationMasterResponse dsfinishResp =
         new FinishApplicationMasterResponsePBImpl(
@@ -263,7 +270,8 @@ public class TestOpportunisticContainerAllocatorAMService {
         DistributedSchedulingAllocateResponse resp = factory
             .newRecordInstance(DistributedSchedulingAllocateResponse.class);
         resp.setNodesForScheduling(
-            Arrays.asList(NodeId.newInstance("h1", 1234)));
+            Arrays.asList(RemoteNode.newInstance(
+                NodeId.newInstance("h1", 1234), "http://h1:4321")));
         return resp;
       }
     };

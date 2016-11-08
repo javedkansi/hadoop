@@ -336,12 +336,14 @@ public class NodeManager extends CompositeService
     addService(nodeHealthChecker);
 
     boolean isDistSchedulingEnabled =
-        conf.getBoolean(YarnConfiguration.
-            OPPORTUNISTIC_CONTAINER_ALLOCATION_ENABLED,
+        conf.getBoolean(YarnConfiguration.DIST_SCHEDULING_ENABLED,
             YarnConfiguration.DIST_SCHEDULING_ENABLED_DEFAULT);
 
     this.context = createNMContext(containerTokenSecretManager,
         nmTokenSecretManager, nmStore, isDistSchedulingEnabled, conf);
+
+
+    ((NMContext)context).setContainerExecutor(exec);
 
     nodeLabelsProvider = createNodeLabelsProvider(conf);
 
@@ -372,7 +374,7 @@ public class NodeManager extends CompositeService
 
     ((NMContext) context).setQueueableContainerAllocator(
         new OpportunisticContainerAllocator(
-            context.getContainerTokenSecretManager(), webServer.getPort()));
+            context.getContainerTokenSecretManager()));
 
     dispatcher.register(ContainerManagerEventType.class, containerManager);
     dispatcher.register(NodeManagerEventType.class, this);
@@ -509,6 +511,7 @@ public class NodeManager extends CompositeService
     private OpportunisticContainerAllocator containerAllocator;
 
     private final QueuingContext queuingContext;
+    private ContainerExecutor executor;
 
     private NMTimelinePublisher nmTimelinePublisher;
 
@@ -702,6 +705,14 @@ public class NodeManager extends CompositeService
     public NMTimelinePublisher getNMTimelinePublisher() {
       return nmTimelinePublisher;
     }
+
+    public ContainerExecutor getContainerExecutor() {
+      return this.executor;
+    }
+
+    public void setContainerExecutor(ContainerExecutor executor) {
+      this.executor = executor;
+    }
   }
 
   /**
@@ -739,7 +750,7 @@ public class NodeManager extends CompositeService
       // Failed to start if we're a Unix based system but we don't have bash.
       // Bash is necessary to launch containers under Unix-based systems.
       if (!Shell.WINDOWS) {
-        if (!Shell.isBashSupported) {
+        if (!Shell.checkIsBashSupported()) {
           String message =
               "Failing NodeManager start since we're on a "
                   + "Unix-based system but bash doesn't seem to be available.";

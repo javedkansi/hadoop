@@ -35,8 +35,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
@@ -81,10 +79,12 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
 import org.apache.hadoop.yarn.util.Records;
+import org.apache.hadoop.yarn.util.Times;
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration.PREFIX;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mortbay.log.Log;
+import org.eclipse.jetty.util.log.Log;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -300,7 +300,6 @@ public class TestYarnCLI {
     reports.add(container);
     reports.add(container1);
     reports.add(container2);
-    DateFormat dateFormat=new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy");
     when(client.getContainers(any(ApplicationAttemptId.class))).thenReturn(
         reports);
     sysOutStream.reset();
@@ -313,41 +312,24 @@ public class TestYarnCLI {
         new OutputStreamWriter(baos, "UTF-8");
     PrintWriter pw = new PrintWriter(stream);
     pw.println("Total number of containers :3");
-    pw.print("                  Container-Id");
-    pw.print("\t          Start Time");
-    pw.print("\t         Finish Time");
-    pw.print("\t               State");
-    pw.print("\t                Host");
-    pw.print("\t   Node Http Address");
-    pw.println("\t                            LOG-URL");
-    pw.print(" container_1234_0005_01_000001");
-    pw.print("\t"+dateFormat.format(new Date(time1)));
-    pw.print("\t"+dateFormat.format(new Date(time2)));
-    pw.print("\t            COMPLETE");
-    pw.print("\t           host:1234");
-    pw.print("\t    http://host:2345");
-    pw.println("\t                             logURL");
-    pw.print(" container_1234_0005_01_000002");
-    pw.print("\t"+dateFormat.format(new Date(time1)));
-    pw.print("\t"+dateFormat.format(new Date(time2)));
-    pw.print("\t            COMPLETE");
-    pw.print("\t           host:1234");
-    pw.print("\t    http://host:2345");
-    pw.println("\t                             logURL");
-    pw.print(" container_1234_0005_01_000003");
-    pw.print("\t"+dateFormat.format(new Date(time1)));
-    pw.print("\t                 N/A");
-    pw.print("\t             RUNNING");
-    pw.print("\t           host:1234");
-    pw.print("\t    http://host:2345");
-    pw.println("\t                                   ");
+    pw.printf(ApplicationCLI.CONTAINER_PATTERN, "Container-Id", "Start Time",
+        "Finish Time", "State", "Host", "Node Http Address", "LOG-URL");
+    pw.printf(ApplicationCLI.CONTAINER_PATTERN, "container_1234_0005_01_000001",
+        Times.format(time1), Times.format(time2),
+        "COMPLETE", "host:1234", "http://host:2345", "logURL");
+    pw.printf(ApplicationCLI.CONTAINER_PATTERN, "container_1234_0005_01_000002",
+        Times.format(time1), Times.format(time2),
+        "COMPLETE", "host:1234", "http://host:2345", "logURL");
+    pw.printf(ApplicationCLI.CONTAINER_PATTERN, "container_1234_0005_01_000003",
+        Times.format(time1), "N/A", "RUNNING", "host:1234",
+        "http://host:2345", "");
     pw.close();
     String appReportStr = baos.toString("UTF-8");
-    Log.info("ExpectedOutput");
-    Log.info("["+appReportStr+"]");
-    Log.info("OutputFrom command");
+    Log.getLog().info("ExpectedOutput");
+    Log.getLog().info("["+appReportStr+"]");
+    Log.getLog().info("OutputFrom command");
     String actualOutput = sysOutStream.toString("UTF-8");
-    Log.info("["+actualOutput+"]");
+    Log.getLog().info("["+actualOutput+"]");
     Assert.assertEquals(appReportStr, actualOutput);
   }
   
@@ -1723,8 +1705,7 @@ public class TestYarnCLI {
         "org.apache.hadoop.yarn.server.resourcemanager.monitor.capacity."
         + "ProportionalCapacityPreemptionPolicy");
     conf.setBoolean(YarnConfiguration.RM_SCHEDULER_ENABLE_MONITORS, true);
-    conf.setBoolean(
-        "yarn.scheduler.capacity.root.a.a1.disable_preemption", true);
+    conf.setBoolean(PREFIX + "root.a.a1.disable_preemption", true);
     MiniYARNCluster cluster =
         new MiniYARNCluster("testReservationAPIs", 2, 1, 1);
 
